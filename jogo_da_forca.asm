@@ -1,8 +1,59 @@
 .data
 
-# ─────────────────────────────────────────────
-# letras para quando acertar
-# ─────────────────────────────────────────────
+
+str0: .string "ALGORITMO"
+str1: .string "COMPILADOR"
+str2: .string "PONTEIRO"
+str3: .string "KERNEL"
+str4: .string "PILHA"
+
+    # Vetor de ponteiros para as strings
+    frutas: .word str0, str1, str2, str3, str4
+
+# =========================================================
+# SPRITES
+# =========================================================
+.include "sprites/header.s"
+.include "sprites/painel_direito.s"
+.include "sprites/letra_slot.s"
+
+.include "sprites/forca/forca_0.s"
+.include "sprites/forca/forca_1.s"
+.include "sprites/forca/forca_2.s"
+.include "sprites/forca/forca_3.s"
+.include "sprites/forca/forca_4.s"
+.include "sprites/forca/forca_5.s"
+.include "sprites/forca/forca_6.s"
+
+# normal
+.include "sprites/letras/letras_normal/a_normal.s"
+.include "sprites/letras/letras_normal/b_normal.s"
+.include "sprites/letras/letras_normal/c_normal.s"
+.include "sprites/letras/letras_normal/d_normal.s"
+.include "sprites/letras/letras_normal/e_normal.s"
+.include "sprites/letras/letras_normal/f_normal.s"
+.include "sprites/letras/letras_normal/g_normal.s"
+.include "sprites/letras/letras_normal/h_normal.s"
+.include "sprites/letras/letras_normal/i_normal.s"
+.include "sprites/letras/letras_normal/j_normal.s"
+.include "sprites/letras/letras_normal/k_normal.s"
+.include "sprites/letras/letras_normal/l_normal.s"
+.include "sprites/letras/letras_normal/m_normal.s"
+.include "sprites/letras/letras_normal/n_normal.s"
+.include "sprites/letras/letras_normal/o_normal.s"
+.include "sprites/letras/letras_normal/p_normal.s"
+.include "sprites/letras/letras_normal/q_normal.s"
+.include "sprites/letras/letras_normal/r_normal.s"
+.include "sprites/letras/letras_normal/s_normal.s"
+.include "sprites/letras/letras_normal/t_normal.s"
+.include "sprites/letras/letras_normal/u_normal.s"
+.include "sprites/letras/letras_normal/v_normal.s"
+.include "sprites/letras/letras_normal/w_normal.s"
+.include "sprites/letras/letras_normal/x_normal.s"
+.include "sprites/letras/letras_normal/y_normal.s"
+.include "sprites/letras/letras_normal/z_normal.s"
+
+# acertou
 .include "sprites/letras/letras_acertou/a_acertou.s"
 .include "sprites/letras/letras_acertou/b_acertou.s"
 .include "sprites/letras/letras_acertou/c_acertou.s"
@@ -30,69 +81,59 @@
 .include "sprites/letras/letras_acertou/y_acertou.s"
 .include "sprites/letras/letras_acertou/z_acertou.s"
 
-# ─────────────────────────────────────────────
-# letras para quando acertar
-# ─────────────────────────────────────────────
+# errou
+.include "sprites/letras/letras_errou/a_errou.s"
+.include "sprites/letras/letras_errou/b_errou.s"
+.include "sprites/letras/letras_errou/c_errou.s"
+.include "sprites/letras/letras_errou/d_errou.s"
+.include "sprites/letras/letras_errou/e_errou.s"
+.include "sprites/letras/letras_errou/f_errou.s"
+.include "sprites/letras/letras_errou/g_errou.s"
+.include "sprites/letras/letras_errou/h_errou.s"
+.include "sprites/letras/letras_errou/i_errou.s"
+.include "sprites/letras/letras_errou/j_errou.s"
+.include "sprites/letras/letras_errou/k_errou.s"
+.include "sprites/letras/letras_errou/l_errou.s"
+.include "sprites/letras/letras_errou/m_errou.s"
+.include "sprites/letras/letras_errou/n_errou.s"
+.include "sprites/letras/letras_errou/o_errou.s"
+.include "sprites/letras/letras_errou/p_errou.s"
+.include "sprites/letras/letras_errou/q_errou.s"
+.include "sprites/letras/letras_errou/r_errou.s"
+.include "sprites/letras/letras_errou/s_errou.s"
+.include "sprites/letras/letras_errou/t_errou.s"
+.include "sprites/letras/letras_errou/u_errou.s"
+.include "sprites/letras/letras_errou/v_errou.s"
+.include "sprites/letras/letras_errou/w_errou.s"
+.include "sprites/letras/letras_errou/x_errou.s"
+.include "sprites/letras/letras_errou/y_errou.s"
+.include "sprites/letras/letras_errou/z_errou.s"
+
 
 .text
 
-# ═══════════════════════════════════════════════
+# =============================================
 #  CONFIGURAÇÃO DO BITMAP DISPLAY
 #  Base:       0x10040000 (heap)
 #  Resolução:  512 x 512 pixels
 #  Unit Width: 1 | Unit Height: 1
 #  Cada pixel ocupa 1 WORD (4 bytes) na memória
-# ═══════════════════════════════════════════════
-
+# =============================================
+# Configuração do jogo:
+# 
+# =============================================
+.globl main
 main:
+ call SETUP
 
-    # ── 2. Desenhar ZADOQUE ─────────────────────
-    # 7 letras × 8px = 56px + 6 espaços × 2px = 68px
-    # x inicial = (512 - 68) / 2 = 222
-    # y = 250 (centro vertical)
-    li   a2, 250            # y fixo para todas as letras
-    li   a3, 0              # frame 0
-
-    # Z — x = 222
-    la   a0, letra_Z_acertou
-    li   a1, 222
-    call PRINT
-
-    # A — x = 232
-    la   a0, letra_A_acertou
-    addi a1, a1, 10
-    call PRINT
-
-    # D — x = 242
-    la   a0, letra_D_acertou
-    addi a1, a1, 10
-    call PRINT
-
-    # O — x = 252
-    la   a0, letra_O_acertou
-    addi a1, a1, 10
-    call PRINT
-
-    # Q — x = 262
-    la   a0, letra_Q_acertou
-    addi a1, a1, 10
-    call PRINT
-
-    # U — x = 272
-    la   a0, letra_U_acertou
-    addi a1, a1, 10
-    call PRINT
-
-    # E — x = 282
-    la   a0, letra_E_acertou
-    addi a1, a1, 10
-    call PRINT
-
-    # ── 3. Loop infinito ────────────────────────
-LOOP:
-    j LOOP
-
-
+# SETUP INICIAL: MOSTRAR FORCA INICIAL, TECLADO, HEADER PADRÃO:
+SETUP:
+ #mostrar forcado:
+	la a0, forca_0
+	li a1, 4
+	li a2, 40
+	li a3, 0
+	call PRINT
 
 
 # ═══════════════════════════════════════════════
