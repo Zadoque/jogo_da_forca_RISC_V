@@ -134,6 +134,11 @@ SETUP:
 	li a2, 40
 	li a3, 0
 	call PRINT
+	la a0, header
+	li a1,0
+	li a2,0
+	li a3,0
+	call PRINT
 
 
 # ═══════════════════════════════════════════════
