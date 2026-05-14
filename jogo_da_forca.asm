@@ -6,10 +6,12 @@ str1: .string "COMPILADOR"
 str2: .string "PONTEIRO"
 str3: .string "KERNEL"
 str4: .string "PILHA"
+nova_linha: .string "\n"
 
-    # Vetor de ponteiros para as strings
-    frutas: .word str0, str1, str2, str3, str4
-
+# Vetor de ponteiros para as strings
+palavras: .word str0, str1, str2, str3, str4
+#quantidade de letras em cada palavra
+qtd_letras: .word 9, 10, 8, 6, 5
 # =========================================================
 # SPRITES
 # =========================================================
@@ -131,7 +133,7 @@ SETUP:
  #mostrar forcado:
 	la a0, forca_0
 	li a1, 4
-	li a2, 40
+	li a2, 49
 	li a3, 0
 	call PRINT
 	la a0, header
@@ -139,8 +141,76 @@ SETUP:
 	li a2,0
 	li a3,0
 	call PRINT
+	jal GERAR_ALEATORIO       # Executa a função. O índice sorteado volta em a0
+    
+    # 2. Copia o índice sorteado para um registrador temporário
+	mv t0, a0                 # t0 = índice sorteado (0 a 4)
+    
+    # 3. Calcula o deslocamento no vetor (índice * 4 bytes)
+    	slli t0, t0, 2            # t0 = t0 * 4
+    
+    # 4. Busca o endereço da palavra sorteada
+    	la t1, palavras           # t1 = endereço base do vetor de palavras
+    	add t1, t1, t0            # t1 = posição exata do ponteiro na memória
+    	lw s0, 0(t1)              # s0 = ponteiro para a string da palavra
+    
+    # 5. Busca a quantidade de letras da palavra sorteada
+    	la t2, qtd_letras         # t2 = endereço base do vetor de tamanhos
+   	add t2, t2, t0            # t2 = posição exata do tamanho na memória
+    	lw s1, 0(t2)              # s1 = quantidade de letras
+    	add s2,zero, s1
+    	la a0, letra_slot
+    	li a1, 104
+    	li a2, 140
+    	jal PRINT_SLOT
+    
 
+    # --- CÓDIGO DE IMPRESSÃO ---
+    # Printa a palavra
+    	mv a0, s0
+    	li a7, 4
+    	call
+    
+    	# Printa quebra de linha
+    	la a0, nova_linha
+    	li a7, 4
+    	ecall
+    
+    	# Printa o tamanho
+    	mv a0, s1
+    	li a7, 1
+    	ecall
+     	# Finalizar o programa com segurança
+    	li a7, 10               # syscall 10: exit
+    	ecall
+##
+#
+# GERAR ALEATÓRIO
+GERAR_ALEATORIO:
+    li a1, 5          # Limite superior (0 a 4)
+    li a7, 42         # syscall 42: rand_range
+    ecall             # a0 recebe o número aleatório
+    ret               # Retorna para quem chamou (o índice está em a0)
+##
+# 
+PRINT_SLOT:
+    # 1. Aloca espaço na pilha e salva o registrador de retorno (ra)
+    addi sp, sp, -4     # Abre 4 bytes de espaço na pilha
+    sw ra, 0(sp)        # Salva o ra original na pilha
 
+LOOP_SLOT:
+    li a3, 0
+    addi a1, a1, 28
+    call PRINT          # O ra muda aqui, mas o original está seguro na pilha
+    
+    addi s2, s2, -1     # Decrementa o contador
+    bgt s2, zero, LOOP_SLOT # Se s2 > 0, volta para o começo do loop
+
+    # 2. Restaura o ra original da pilha antes de sair
+    lw ra, 0(sp)        # Recupera o ra original
+    addi sp, sp, 4      # Devolve o espaço da pilha
+    
+    ret                 # Agora o ret vai voltar com segurança para o jogo!
 # ═══════════════════════════════════════════════
 #  PRINT
 #  Desenha sprite no bitmap display
